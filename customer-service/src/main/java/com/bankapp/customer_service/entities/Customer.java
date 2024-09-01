@@ -2,6 +2,7 @@ package com.bankapp.customer_service.entities;
 
 import java.time.LocalDate;
 
+import com.bankapp.customer_service.enumes.ERole;
 import com.bankapp.customer_service.enumes.Gender;
 
 import jakarta.persistence.Entity;
@@ -27,7 +28,10 @@ public class Customer {
 	private String email;
 	private String phoneNumber;
 	private String panNumber;
-	
+	private ERole role;
+	private String loginId;
+	private String password;
+
 	@OneToOne
 	private Account account;
 	
@@ -100,5 +104,29 @@ public class Customer {
 	public void setPanNumber(String panNumber) {
 		this.panNumber = panNumber;
 	}
+	
+	public ERole getRole() {
+		return role;
+	}
+	public void setRole(ERole role) {
+		this.role = role;
+	}
+	
+	public String getLoginId() {
+		return loginId;
+	}
+	public void setLoginId(String loginId) {
+		this.loginId = loginId;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	
+	public String getUsername() {
+        return this.loginId;
+    }
 
 }

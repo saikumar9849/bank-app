@@ -2,6 +2,7 @@ package com.tarun.admin_service.customer.dto;
 
 import java.time.LocalDate;
 
+import com.tarun.admin_service.enumes.ERole;
 import com.tarun.admin_service.enumes.Gender;
 
 public class CustomerRequestDTO {
@@ -20,6 +21,28 @@ public class CustomerRequestDTO {
 	private String phoneNumber;
 	
 	private String panNumber;
+	
+	private ERole role;
+	
+	private String loginId;
+	
+	private String password;
+
+	public String getLoginId() {
+		return loginId;
+	}
+
+	public void setLoginId(String loginId) {
+		this.loginId = loginId;
+	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
 
 	public String getFirstName() {
 		return firstName;
@@ -83,5 +106,13 @@ public class CustomerRequestDTO {
 
 	public void setPanNumber(String panNumber) {
 		this.panNumber = panNumber;
+	}
+
+	public ERole getRole() {
+		return role;
+	}
+
+	public void setRole(ERole role) {
+		this.role = role;
 	}
 }

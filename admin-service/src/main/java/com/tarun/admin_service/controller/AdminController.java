@@ -1,10 +1,12 @@
 package com.tarun.admin_service.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -38,22 +40,22 @@ public class AdminController {
 		return adminService.updateAdminDetails(id,req);
 	}
 	
-	@PutMapping("/update-customer/{customerId}")
+	@PutMapping("/update-customer")
 	@SecurityRequirement(name = "Bearer Authentication")
-	public CustomerResponse updateCustomerData(@PathVariable Integer id, @RequestBody CustomerRequestDTO req) {
-		return adminService.updateCustomerData(id,req);
+	public ResponseEntity<CustomerResponse> updateCustomerData(@RequestParam Integer customerId, @RequestParam Integer adminId, @RequestBody CustomerRequestDTO req) {
+		return adminService.updateCustomerData(customerId, adminId, req);
 	}
 	
 	@PutMapping("/customer-loanapproval")
 	@SecurityRequirement(name = "Bearer Authentication")
-	public LoanAccount loanApproval(@RequestParam Integer customerId) {
-		return adminService.loanApproval(customerId);
+	public ResponseEntity<LoanAccount> loanApproval(@RequestParam Integer customerId, @RequestParam Integer adminId) {
+		return adminService.loanApproval(customerId, adminId);
 	}
 	
 	@PutMapping("/update-accountstatus")
 	@SecurityRequirement(name = "Bearer Authentication")
-	public AccountResponse updateAccountStatus(@RequestParam Integer customerId) {
-		return adminService.updateAccountStatus(customerId);
+	public ResponseEntity<AccountResponse> updateAccountStatus(@RequestParam Integer customerId, @RequestParam Integer adminId) {
+		return adminService.updateAccountStatus(customerId, adminId);
 	}
 
 }

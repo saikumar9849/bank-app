@@ -1,6 +1,11 @@
 package com.tarun.admin_service.services;
 
+import java.time.LocalDate;
+
+import org.apache.coyote.http11.Http11InputBuffer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -12,6 +17,8 @@ import com.tarun.admin_service.dto.AdminResponse;
 import com.tarun.admin_service.dto.SignupRequest;
 import com.tarun.admin_service.entity.Admin;
 import com.tarun.admin_service.enumes.AccountStatus;
+import com.tarun.admin_service.enumes.ERole;
+import com.tarun.admin_service.enumes.Gender;
 import com.tarun.admin_service.enumes.LoanStatus;
 import com.tarun.admin_service.feign.CustomerInterface;
 import com.tarun.admin_service.repository.AdminRepository;
@@ -45,8 +52,32 @@ public class AdminService {
 		return convertAdminData(savedAdmin);
 	}
 	
-	public CustomerResponse updateCustomerData(Integer id, CustomerRequestDTO req) {
-		return customerInterface.updateCustomer(id, req);
+	public ResponseEntity<CustomerResponse> updateCustomerData(Integer id, Integer adminId, CustomerRequestDTO req) {
+		String token = getToken(adminId);
+		return customerInterface.updateCustomer(token, id, req);
+	}
+	
+	public ResponseEntity<LoanAccount> loanApproval(Integer customerId, Integer adminId) {
+		String token = getToken(adminId);
+		CustomerResponse customer = customerInterface.getCustomer(token, customerId).getBody();
+		if(customer.getLoanDetails()!=null && customer.getLoanDetails().getLoanStatus().equals(LoanStatus.INPROGRESS) && customer.getAccountDetails()!=null) {
+			if(customer.getAccountDetails().getBalance()>=customer.getLoanDetails().getAmount()) {
+				return customerInterface.loanApproval(token, customerId, LoanStatus.APPROVED.name());
+			}
+		}
+		return customerInterface.loanApproval(token, customerId, LoanStatus.REJECTED.name());
+	}
+
+	public ResponseEntity<AccountResponse> updateAccountStatus(Integer customerId, Integer adminId) {
+		String token = getToken(adminId);
+		CustomerResponse customer = customerInterface.getCustomer(token, customerId).getBody();
+		if(customer==null) {
+			return new ResponseEntity<>(null,HttpStatus.UNAUTHORIZED);
+		}
+		if(customer.getAccountDetails()!=null && customer.getAccountDetails().getBalance()<1000) {
+			return customerInterface.updateAccountStatus(token, customerId, AccountStatus.SUSPENDED.name());
+		}
+		return customerInterface.getAccount(token, customerId);
 	}
 	
 	private AdminResponse convertAdminData(Admin admin) {
@@ -59,24 +90,22 @@ public class AdminService {
 		adminRes.setEmail(admin.getEmail());
 		return adminRes;
 	}
-
-	public LoanAccount loanApproval(Integer customerId) {
-		CustomerResponse customer = customerInterface.getCustomer(customerId);
-		if(customer.getLoanDetails()!=null && customer.getLoanDetails().getLoanStatus().equals(LoanStatus.INPROGRESS) && customer.getAccountDetails()!=null) {
-			if(customer.getAccountDetails().getBalance()>=customer.getLoanDetails().getAmount()) {
-				return customerInterface.loanApproval(customerId, LoanStatus.APPROVED.name());
-			}
-			return customerInterface.loanApproval(customerId, LoanStatus.REJECTED.name());
-		}
-		return null;
-	}
-
-	public AccountResponse updateAccountStatus(Integer customerId) {
-		CustomerResponse customer = customerInterface.getCustomer(customerId);
-		if(customer.getAccountDetails()!=null && customer.getAccountDetails().getBalance()<1000) {
-			return customerInterface.updateAccountStatus(customerId, AccountStatus.SUSPENDED.name());
-		}
-		return customerInterface.getAccount(customerId);
+	
+	private String getToken(Integer id) {
+		Admin admin = adminRepo.findById(id).get();
+		CustomerRequestDTO customer = new CustomerRequestDTO();
+		customer.setFirstName(admin.getFirstName());
+		customer.setLastName(admin.getLastName());
+		customer.setNationality("Indian");
+		customer.setEmail(admin.getEmail());
+		customer.setPhoneNumber(Long.toString(admin.getContactNumber()));
+		customer.setLoginId(admin.getLoginId());
+		customer.setPassword(admin.getLoginId());
+		customer.setDateOfBirth(LocalDate.now());
+		customer.setPanNumber("NoPAN");
+		customer.setGender(Gender.M);
+		customer.setRole(ERole.ROLE_ADMIN);
+		return customerInterface.getToken(customer).getBody();
 	}
 
 }

@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.bankapp.customer_service.dto.AccountResponse;
@@ -26,6 +27,9 @@ public class CustomerService {
 	
 	@Autowired
 	AccountService accountService;
+	
+	@Autowired
+    PasswordEncoder encoder;
 
 	public CustomerResponse createCustomer(CustomerRequestDTO customerReq) {
 		Customer customer = setCustomerDetails(customerReq, new Customer());
@@ -65,6 +69,9 @@ public class CustomerService {
 		customer.setNationality(customerReq.getNationality());
 		customer.setPanNumber(customerReq.getPanNumber());
 		customer.setPhoneNumber(customerReq.getPhoneNumber());
+		customer.setRole(customerReq.getRole());
+		customer.setLoginId(customerReq.getLoginId());
+		customer.setPassword(encoder.encode(customerReq.getPassword()));
 		return customer;
 	}
 	
