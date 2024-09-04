@@ -1,6 +1,7 @@
 package com.bankapp.customer_service.entities;
 
 import java.time.LocalDate;
+import java.util.List;
 
 import com.bankapp.customer_service.enumes.ERole;
 import com.bankapp.customer_service.enumes.Gender;
@@ -11,6 +12,7 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 
 @Entity
@@ -37,6 +39,9 @@ public class Customer {
 	
 	@OneToOne
 	private LoanAccount loan;
+	
+	@OneToMany
+	private List<InvestmentAccount> investmentAccount;
 	
 	public LoanAccount getLoan() {
 		return loan;
@@ -128,5 +133,11 @@ public class Customer {
 	public String getUsername() {
         return this.loginId;
     }
+	public List<InvestmentAccount> getInvestmentAccount() {
+		return investmentAccount;
+	}
+	public void setInvestmentAccount(List<InvestmentAccount> investmentAccount) {
+		this.investmentAccount = investmentAccount;
+	}
 
 }

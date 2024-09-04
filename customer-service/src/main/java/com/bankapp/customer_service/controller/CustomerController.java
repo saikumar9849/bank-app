@@ -19,6 +19,7 @@ import com.bankapp.customer_service.dto.CustomerResponse;
 import com.bankapp.customer_service.security.jwt.JwtUtils;
 import com.bankapp.customer_service.service.CustomerService;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
@@ -34,36 +35,38 @@ public class CustomerController {
 	@PutMapping("/update/{customerId}")
 	@SecurityRequirement(name = "Bearer Authentication")
 	@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
-	public CustomerResponse updateCustomer(@PathVariable Integer customerId, @RequestBody CustomerRequestDTO customerReq) {
+	public ResponseEntity<CustomerResponse> updateCustomer(@PathVariable Integer customerId, @RequestBody CustomerRequestDTO customerReq) {
 		return customerService.updateCustomer(customerId, customerReq);
 	}
 	
 	@GetMapping("/get/{customerId}")
 	@SecurityRequirement(name = "Bearer Authentication")
 	@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
-	public CustomerResponse getCustomer(@PathVariable Integer customerId) {
+	public ResponseEntity<CustomerResponse> getCustomer(@PathVariable Integer customerId) {
 		return customerService.getCustomer(customerId);
 	}
 	
 	@PostMapping("/create-account/{customerId}")
 	@SecurityRequirement(name = "Bearer Authentication")
 	@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
-	public AccountResponse createAccount(@PathVariable Integer customerId) {
+	public ResponseEntity<AccountResponse> createAccount(@PathVariable Integer customerId) {
 		return customerService.createAccount(customerId);
 	}
 	
+	@Hidden
 	@PutMapping("/admin/update/{customerId}")
 	public ResponseEntity<CustomerResponse> updateCustomer(@RequestParam String token, @PathVariable Integer customerId, @RequestBody CustomerRequestDTO customerReq) {
 		if(jwtUtils.validateJwtToken(token)) {
-			return new ResponseEntity<>(customerService.updateCustomer(customerId, customerReq),HttpStatus.OK);
+			return customerService.updateCustomer(customerId, customerReq);
 		}
 		return new ResponseEntity<>(null,HttpStatus.UNAUTHORIZED);
 	}
 	
+	@Hidden
 	@GetMapping("/admin/get/{customerId}")
 	public ResponseEntity<CustomerResponse> getCustomer(@RequestParam String token, @PathVariable Integer customerId) {
 		if(jwtUtils.validateJwtToken(token)) {
-			return new ResponseEntity<>(customerService.getCustomer(customerId),HttpStatus.OK);
+			return customerService.getCustomer(customerId);
 		}
 		return new ResponseEntity<>(null,HttpStatus.UNAUTHORIZED);
 	}

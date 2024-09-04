@@ -4,6 +4,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -13,6 +15,7 @@ import com.bankapp.customer_service.dto.CustomerResponse;
 import com.bankapp.customer_service.entities.Account;
 import com.bankapp.customer_service.entities.Customer;
 import com.bankapp.customer_service.enumes.AccountStatus;
+import com.bankapp.customer_service.exception.CustomerNotFound;
 import com.bankapp.customer_service.repository.AccountRepository;
 import com.bankapp.customer_service.repository.CustomerRepository;
 
@@ -37,18 +40,28 @@ public class CustomerService {
 		return generateCustomerRes(savedCustomer);
 	}
 
-	public CustomerResponse updateCustomer(Integer id, CustomerRequestDTO customerReq) {
+	public ResponseEntity<CustomerResponse> updateCustomer(Integer id, CustomerRequestDTO customerReq) {
 		Customer customer = customerRepo.findById(id).get();
+		if(customer==null) {
+			throw new CustomerNotFound(String.format("Customer with id: %s not found", id));
+		}
 		Customer updatedCustomer = customerRepo.save(setCustomerDetails(customerReq, customer));
-		return generateCustomerRes(updatedCustomer);
+		return new ResponseEntity<CustomerResponse>(generateCustomerRes(updatedCustomer), HttpStatus.OK);
 	}
 	
-	public CustomerResponse getCustomer(Integer id) {
-		return generateCustomerRes(customerRepo.findById(id).get());
-	}
-
-	public AccountResponse createAccount(Integer id) {
+	public ResponseEntity<CustomerResponse> getCustomer(Integer id) {
 		Customer customer = customerRepo.findById(id).get();
+		if(customer==null) {
+			throw new CustomerNotFound(String.format("Customer with id: %s not found", id));
+		}
+		return new ResponseEntity<CustomerResponse>(generateCustomerRes(customer), HttpStatus.OK);
+	}
+	
+	public ResponseEntity<AccountResponse> createAccount(Integer id) {
+		Customer customer = customerRepo.findById(id).get();
+		if(customer==null) {
+			throw new CustomerNotFound(String.format("Customer with id: %s not found", id));
+		}
 		Account account = new Account();
 		account.setBalance(0);
 		account.setAccountStatus(AccountStatus.ACTIVATED);
@@ -57,7 +70,7 @@ public class CustomerService {
 		Account savedAccount = accountRepo.save(account);
 		customer.setAccount(account);
 		customerRepo.save(customer);
-		return accountService.convertAccount(savedAccount);
+		return new ResponseEntity<>(accountService.convertAccount(savedAccount), HttpStatus.OK);
 	}
 	
 	private Customer setCustomerDetails(CustomerRequestDTO customerReq, Customer customer) {

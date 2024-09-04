@@ -24,6 +24,7 @@ import com.bankapp.customer_service.security.jwt.JwtUtils;
 import com.bankapp.customer_service.service.CustomerService;
 import com.bankapp.customer_service.service.UserDetailsImpl;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -91,6 +92,7 @@ public class AuthController {
         
     }
     
+    @Hidden
     @PostMapping("/get-token")
     public ResponseEntity<String> getToken(@RequestBody CustomerRequestDTO signUpRequest) {
     	if(!userRepository.existsByLoginId(signUpRequest.getLoginId())) {

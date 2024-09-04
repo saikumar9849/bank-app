@@ -16,11 +16,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.bankapp.customer_service.dto.AccountResponse;
+import com.bankapp.customer_service.dto.InvestmentRequest;
 import com.bankapp.customer_service.dto.TransactionRequest;
 import com.bankapp.customer_service.dto.TransactionResponse;
 import com.bankapp.customer_service.security.jwt.JwtUtils;
 import com.bankapp.customer_service.service.AccountService;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
@@ -36,50 +38,59 @@ public class AccountController {
 	@PostMapping("/deposit")
 	@SecurityRequirement(name = "Bearer Authentication")
 	@PreAuthorize("hasRole('ROLE_USER')")
-	public TransactionResponse depositAmount(@RequestBody TransactionRequest transactionReq) {
+	public ResponseEntity<TransactionResponse> depositAmount(@RequestBody TransactionRequest transactionReq) {
 		return accountService.depositAmount(transactionReq);
 	}
 	
 	@PostMapping("/withdraw")
 	@SecurityRequirement(name = "Bearer Authentication")
 	@PreAuthorize("hasRole('ROLE_USER')")
-	public TransactionResponse withdrawAmount(@RequestBody TransactionRequest transactionReq) {
+	public ResponseEntity<TransactionResponse> withdrawAmount(@RequestBody TransactionRequest transactionReq) {
 		return accountService.withdrawAmount(transactionReq);
 	}
 	
 	@PostMapping("/transfer")
 	@SecurityRequirement(name = "Bearer Authentication")
 	@PreAuthorize("hasRole('ROLE_USER')")
-	public TransactionResponse transferAmount(@RequestBody TransactionRequest transactionReq) {
+	public ResponseEntity<TransactionResponse> transferAmount(@RequestBody TransactionRequest transactionReq) {
 		return accountService.transferAmount(transactionReq);
+	}
+	
+	@PostMapping("/investment-transfer/{customerId}")
+	@SecurityRequirement(name = "Bearer Authentication")
+	@PreAuthorize("hasRole('ROLE_USER')")
+	public ResponseEntity<TransactionResponse> investmentTransferAmount(@PathVariable Integer customerId, @RequestBody InvestmentRequest investmentReq) {
+		return accountService.investment(customerId, investmentReq);
 	}
 	
 	@GetMapping("/transactions/{accountId}")
 	@SecurityRequirement(name = "Bearer Authentication")
 	@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
-	public List<TransactionResponse> getTransactionsList(@PathVariable Integer accountId){
+	public ResponseEntity<List<TransactionResponse>> getTransactionsList(@PathVariable Integer accountId){
 		return accountService.getTransactionsList(accountId);
 	}
 	
 	@GetMapping("/getaccount/{customerId}")
 	@SecurityRequirement(name = "Bearer Authentication")
 	@PreAuthorize("hasRole('ROLE_USER') or hasRole('ROLE_ADMIN')")
-	public AccountResponse getAccount(@PathVariable Integer customerId) {
+	public ResponseEntity<AccountResponse> getAccount(@PathVariable Integer customerId) {
 		return accountService.getAccount(customerId);
 	}
 	
+	@Hidden
 	@PutMapping("/admin/update-accountstatus")
 	public ResponseEntity<AccountResponse> updateAccountStatus(@RequestParam String token, @RequestParam Integer customerId,@RequestParam String status) {
 		if(jwtUtils.validateJwtToken(token)) {
-			return new ResponseEntity<>(accountService.getAccount(customerId),HttpStatus.OK);
+			return accountService.updateAccountStatus(customerId, status);
 		}
 		return new ResponseEntity<>(null,HttpStatus.UNAUTHORIZED);
 	}
 	
+	@Hidden
 	@GetMapping("/admin/getaccount/{customerId}")
 	public ResponseEntity<AccountResponse> getAccount(@RequestParam String token, @PathVariable Integer customerId) {
 		if(jwtUtils.validateJwtToken(token)) {
-			return new ResponseEntity<>(accountService.getAccount(customerId),HttpStatus.OK);
+			return accountService.getAccount(customerId);
 		}
 		return new ResponseEntity<>(null,HttpStatus.UNAUTHORIZED);
 	}
